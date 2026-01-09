@@ -12,9 +12,9 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(),
     {
       provide: APP_INITIALIZER,
-      multi: true,
-      deps: [AppConfig],
-      useFactory: (cfg: AppConfig) => () => cfg.load(),
+  multi: true,
+  deps: [AppConfig],
+  useFactory: (cfg: AppConfig) => () => cfg.load().catch(() => void 0),
     },
   ]
 };
