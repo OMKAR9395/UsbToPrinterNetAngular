@@ -1,0 +1,113 @@
+<mat-toolbar color="primary" class="toolbar">
+  <span>USB Printer Panel</span>
+  <span class="spacer"></span>
+
+  <button mat-raised-button color="accent" (click)="refreshAll()">
+    <mat-icon>refresh</mat-icon>
+    Refresh
+  </button>
+</mat-toolbar>
+
+<div class="page">
+  <mat-card class="card">
+    <mat-card-title>USB Devices</mat-card-title>
+    <mat-card-subtitle>Select a device with VID/PID (printer)</mat-card-subtitle>
+
+    <mat-card-content>
+      <div class="table-wrap">
+        <table mat-table [dataSource]="devices" class="mat-elevation-z0">
+          <ng-container matColumnDef="select">
+            <th mat-header-cell *matHeaderCellDef></th>
+            <td mat-cell *matCellDef="let d">
+              <button mat-icon-button (click)="pick(d)" [disabled]="!isBindable(d)">
+                <mat-icon>
+                  {{ selected?.pnpDeviceId === d.pnpDeviceId ? 'radio_button_checked' : 'radio_button_unchecked' }}
+                </mat-icon>
+              </button>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="name">
+            <th mat-header-cell *matHeaderCellDef>Name</th>
+            <td mat-cell *matCellDef="let d">
+              <div class="name">{{ d.name }}</div>
+              <div class="pnp">{{ d.pnpDeviceId }}</div>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="vidpid">
+            <th mat-header-cell *matHeaderCellDef>VID/PID</th>
+            <td mat-cell *matCellDef="let d">
+              {{ d.vid }} / {{ d.pid }}
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="serial">
+            <th mat-header-cell *matHeaderCellDef>Serial</th>
+            <td mat-cell *matCellDef="let d">{{ d.serial || '—' }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="status">
+            <th mat-header-cell *matHeaderCellDef>Status</th>
+            <td mat-cell *matCellDef="let d">{{ d.status || '—' }}</td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr
+            mat-row
+            *matRowDef="let row; columns: displayedColumns"
+            [class.active]="selected?.pnpDeviceId === row.pnpDeviceId"
+          ></tr>
+        </table>
+      </div>
+
+      <div class="actions">
+        <button mat-raised-button color="primary" (click)="bindSelected()" [disabled]="!selected || !isBindable(selected)">
+          <mat-icon>link</mat-icon>
+          Bind Selected
+        </button>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card class="card">
+    <mat-card-title>Stored Binding</mat-card-title>
+
+    <mat-card-content *ngIf="binding; else nobind">
+      <div class="kv">
+        <div><b>VID:</b> {{ binding.vid }}</div>
+        <div><b>PID:</b> {{ binding.pid }}</div>
+        <div><b>Serial:</b> {{ binding.serial }}</div>
+        <div><b>MachineId:</b> {{ binding.machineId }}</div>
+        <div><b>FriendlyName:</b> {{ binding.friendlyName }}</div>
+      </div>
+    </mat-card-content>
+
+    <ng-template #nobind>
+      <mat-card-content>No binding found. Bind a printer.</mat-card-content>
+    </ng-template>
+  </mat-card>
+
+  <mat-card class="card">
+    <mat-card-title>TSPL</mat-card-title>
+
+    <mat-card-content>
+      <mat-form-field appearance="outline" class="full">
+        <mat-label>TSPL Commands</mat-label>
+        <textarea matInput rows="10" [formControl]="form.controls.tspl"></textarea>
+      </mat-form-field>
+
+      <div class="actions">
+        <button mat-raised-button color="accent" (click)="print()" [disabled]="!binding || form.invalid">
+          <mat-icon>print</mat-icon>
+          Print
+        </button>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>
+
+<div class="overlay" *ngIf="loading">
+  <mat-progress-spinner mode="indeterminate" diameter="50"></mat-progress-spinner>
+  <div class="overlay-text">Please wait...</div>
+</div>
